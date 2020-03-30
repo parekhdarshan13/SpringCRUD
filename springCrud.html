@@ -1,0 +1,248 @@
+
+<html>
+  <head>  
+  
+  <script src="./angular.min.js"></script>
+    
+    <title>AngularJS $http Spring Boot Rest example</title>  
+ <script type="text/javascript">
+            var app = angular.module("ProductManagement", []);
+         
+            //Controller Part
+            app.controller("ProductController", function($scope, $http) {
+         
+               
+                $scope.products = [];
+                $scope.productForm = {
+                    prodcutid : -1,
+                    productName : "",
+                    productName : "",
+					productCategory : ""
+                };
+         
+                //Now load the data from server
+                _refreshProductData();
+         
+                //HTTP POST/PUT methods for add/edit product 
+                // with the help of id, we are going to find out whether it is save or edit operation
+                
+                $scope.submitProduct = function() {
+         
+                    var method = "";
+                    var url = "";
+                    if ($scope.productForm.prodcutid == -1) {
+                        //Id is absent in form data, it is create new country operation
+                        method = "POST";
+                        url = 'http://localhost:8080/productAdd';
+                    } else {
+                        //Id is present in form data, it is edit country operation
+                        method = "POST";
+                        url = 'http://localhost:8080/productUpdate';
+                    }
+         
+                    $http({
+                        method : method,
+                        url : url,
+                        data : angular.toJson($scope.productForm),
+                        headers : {
+                            'Content-Type' : 'application/json'
+                        }
+                    }).then( _success, _error );
+                };
+         
+                //HTTP DELETE- delete country by Id
+                $scope.deleteProduct = function(product) {
+                    $http({
+                        method : 'POST',
+                        url : 'http://localhost:8080/productDelete/' + product.prodcutid
+                    }).then(_success, _error);
+                };
+ 
+             // In case of edit, populate form fields and assign form.id with country id
+                $scope.editProduct = function(product) {
+                  
+                    $scope.productForm.productName = product.productName;
+                    $scope.productForm.productPrice = product.productPrice;
+					$scope.productForm.productCategory = product.productCategory;
+                    $scope.productForm.prodcutid = product.prodcutid;
+                };
+         
+                /* Private Methods */
+                //HTTP GET- get all products collection
+                function _refreshProductData() {
+                    $http({
+                        method : 'POST',
+                        url : 'http://localhost:8080/product'
+                    }).then(function successCallback(response) {
+                        $scope.products = response.data;
+                    }, function errorCallback(response) {
+                        console.log(response.statusText);
+                    });
+                }
+         
+                function _success(response) {
+                    _refreshProductData();
+                    _clearFormData()
+                }
+         
+                function _error(response) {
+                    console.log(response.statusText);
+                }
+         
+                //Clear the form
+                function _clearFormData() {
+                    $scope.productForm.prodcutid = -1;
+                    $scope.productForm.productName = "";
+                    $scope.productForm.productPrice = "";
+					$scope.productForm.productCategory = "";
+                
+                };
+            });
+        </script>
+        <style>
+           
+.blue-button{
+	background: #25A6E1;
+	filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#25A6E1',endColorstr='#188BC0',GradientType=0);
+	padding:3px 5px;
+	color:#fff;
+	font-family:'Helvetica Neue',sans-serif;
+	font-size:12px;
+	border-radius:2px;
+	-moz-border-radius:2px;
+	-webkit-border-radius:4px;
+	border:1px solid #1A87B9
+}     
+
+.red-button{
+	background: #CD5C5C;
+
+	padding:3px 5px;
+	color:#fff;
+	font-family:'Helvetica Neue',sans-serif;
+	font-size:12px;
+	border-radius:2px;
+	-moz-border-radius:2px;
+	-webkit-border-radius:4px;
+	border:1px solid #CD5C5C
+}      
+
+table {
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+   width: 50%;
+}
+
+caption {
+  text-align: left;
+  color: silver;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 5px;
+}
+
+th {
+  background: SteelBlue;
+  color: white;
+}
+
+
+tbody tr:nth-child(even) {
+  background: WhiteSmoke;
+}
+
+tbody tr td:nth-child(2) {
+  text-align:center;
+}
+
+tbody tr td:nth-child(3),
+tbody tr td:nth-child(4) {
+  text-align: center;
+  font-family: monospace;
+}
+
+tbody tr td:nth-child(5){
+	width: 20%;
+}
+tfoot {
+  background: SeaGreen;
+  color: white;
+  text-align: right;
+}
+
+tfoot tr th:last-child {
+  font-family: monospace;
+}
+
+            td,th{
+                border: 1px solid gray;
+                width: 25%;
+                text-align: left;
+                padding: 5px 10px;
+            }
+          
+            
+            
+</style>
+    <head>
+    <body ng-app="ProductManagement" ng-controller="ProductController">
+         <h1>
+           AngularJS  / Spring Boot Restful web services example using $http
+        </h1> 
+        <form ng-submit="submitProduct()">
+            
+			<table>
+               
+                <tr>
+                    <th colspan="2">Add/Edit Product</th>
+                 </tr>
+                <tr>
+                    <td> Name</td>
+                    <td><input type="text" ng-model="productForm.productName" /></td>
+                </tr>
+                <tr>
+                    <td> Price</td>
+                    <td><input type="text" ng-model="productForm.productPrice"  /></td>
+                </tr>
+                <tr>
+                    <td> Category</td>
+                    <td><input type="text" ng-model="productForm.productCategory"  /></td>
+                </tr>
+                
+				<tr>
+                    <td colspan="2"><input type="submit" value="Submit" class="blue-button" /></td>
+                </tr>
+            </table>
+        </form>
+		
+		<h3>Products</h3>
+		
+        <table>
+            <tr>
+              
+                <th> ID</th>
+				<th> Name</th>
+                <th> Price</th>
+                <th>Category</th>
+				<th>Edit / Delete</th>
+               
+            </tr>
+ 
+            <tr ng-repeat="product in products">
+    
+	<td> {{ product.prodcutid }}</td>
+	<td> {{ product.productName }}</td>	
+    <td> {{ product.productPrice }}</td>
+	<td> {{ product.productCategory }}</td>
+      
+                
+                <td><a ng-click="editProduct(product)" class="blue-button">Edit</a> | <a ng-click="deleteProduct(product)" class="red-button">Delete</a></td>
+            </tr>
+ 
+        </table>
+ 
+       
+ 
+       
+      
+  </body>
+</html>
